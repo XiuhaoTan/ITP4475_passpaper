@@ -1,0 +1,124 @@
+AY2122_4887_Test
+Question B1
+```{r}
+BodyMass <- data.frame(Name = c("Markayla Lanier","Mufeed al-Ameen","Vanessa Louailler",
+                                "Quy Canono","Shaakira el-lqbal","Madeleine Martinez",
+                                "Edward Roland","Glenda Caranza","Jeremiah Abachiche","Audrey Flores"),
+                       Gender = c("Male","Female","Male","Male","Female","Female","Male",
+                                  "Female","Female","Male"),
+                       Height = c(176,171,164,177,164,177,177,170,170,151),
+                       Weigth = c(69,66,66,46,79,72,68,51,50,60))
+BodyMass
+```
+
+a.	Update the Name "Vanessa Louailler" to "Benson Lau".
+```{r}
+BodyMass$Name[BodyMass$Name == "Vanessa Louailler"] <- "Benson Lau"
+BodyMass
+```
+
+b.	find all the Male that their Height is taller than 170.
+The result only includes the column "Name" and "Height".
+```{r}
+result <- BodyMass[BodyMass$Gender == "Male" & BodyMass$Height > 170,c("Name","Height")]
+result
+```
+
+c.Delete the column Gender.
+```{r}
+BodyMass$Gender <- NULL
+BodyMass
+```
+
+d.	Suppose the unit of the Height and the Weight is centimetre and kilogramme, respectively. Then, add a new column "BMI" to the "BodyMass", and the value should base on the below formula:
+BMI = Weight in kilogrammme / (Height in metre)^2
+```{r}
+BodyMass$BMI <- BodyMass$Weigth / (BodyMass$Height / 100)^2
+BodyMass
+```
+
+Question B2
+```{r}
+BookSale <- data.frame(bookName = c("Tensei Shitara Suraimu datta Ken",
+                                    "Miss Kobayashi's Dragon Maid",
+                                    "Y<U+014D>jo Senki",
+                                    "Pokemon",
+                                    "RWBY"),
+                       SaleVolume = c(5000,15353,5432,33455,1594433),
+                       PublishRegion = c("Japan","Japan","Japan","Japan","Europe"))
+
+BookInformation <- data.frame(bookName = c("Tensei Shitara Suraimu datta Ken",
+                                           "Miss Kobayashi's Dragon Maid",
+                                           "Y<U+014D>jo Senki",
+                                           "Pokemon",
+                                           "RWBY"),
+                              price = c("5531JPY","3775JPY","2600JPY","10000JPY","160EUR"))
+BookSale
+BookInformation
+```
+
+a.	combine the above datasets to a single dataframe object Bookstat by sqldf(). Assume the sqldf package is imported. And, below is the sample for reference.
+```{r}
+require("sqldf")
+Bookstat <- sqldf("select S.bookName, SaleVolume,PublishRegion,price
+                  from BookSale S, BookInformation I
+                  where S.bookName = I.bookName;")
+Bookstat
+```
+
+b.	Exchange all the currency of the price to HKD. The following is the exchange rate:
+i.	JPY : HKD = 1: 0.070755877
+ii.	EUR : HKD = 1 : 9.1951366
+```{r}
+require(stringr)
+Bookstat$priceValue <- as.numeric(str_extract(Bookstat$price,"\\d+"))
+Bookstat$priceUnit <- str_extract(Bookstat$price,"[a-zA-Z]+")
+Bookstat$priceValue <- unlist(mapply(function(x,y){
+  if(y == "JPY"){
+    x <- x * 0.070755877
+  }else if(y == "EUR"){
+    x <- x *9.1951366
+  }else{
+    x <- x
+  }
+},  Bookstat$priceValue,
+  Bookstat$priceUnit
+))
+Bookstat$priceUnit <- "HKD"
+Bookstat$priceHKD <- paste0(as.integer(Bookstat$priceValue), Bookstat$priceUnit)
+Bookstat[,c("bookName","SaleVolume","PublishRegion","price","priceHKD")]
+```
+
+c.	calculate the revenue by Publishregion by tapply(). (hint: Revenue = SaleVolume x price)
+```{r}
+revenue <- Bookstat$SaleVolume * Bookstat$priceValue
+regionrevenue <- data.frame(tapply(revenue,Bookstat$PublishRegion,sum))
+regionrevenue
+```
+
+Question B3
+a.	read the HTML document from the webpage "http://IT114116.edu.hk" and store the result to the object html.
+```{r}
+require("rvest")
+#html <- read_html("http://IT114116.edu.hk")
+html <- read_html("https://poe.com/")
+```
+
+b.	Extract elements from all anchor tags and store into the object "node".
+(Hint: you can use the value from previous answer)
+```{r}
+node <- html_elements(html,"a")
+node
+```
+
+c.	extract the URL link from the anchor tag and store it in full URL format into the object URL.
+Full URL example: "http://IT114116.edu.hk/notice/12378.html" (Hint: you can use the value from previous answer)
+```{r}
+URL <- html_attr(node,"href")
+URL
+```
+
+Question B4
+```{r}
+
+```
