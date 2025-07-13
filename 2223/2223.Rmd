@@ -1,0 +1,107 @@
+ITP4887_AY2223_WrittenTestBeta_Student
+Question B1
+a.	Request the server to return an HTML document and store the result to the object html. The address of the server is given to the object url.
+```{r}
+require(rvest)
+url <- "movie.html"
+html <- read_html(url)
+```
+
+b.	Extract the content of table tag and store it into the object "node". (Hint: you can use the value from the previous answer)
+```{r}
+node <- html_elements(html,"table td")
+node
+```
+
+c.	Convert the extracted value in node to Dataframe and store it into object budget. (Hint: you can use the value from the previous answer)
+```{r}
+node <- html_text(node)
+budget <- data.frame(node)
+budget
+```
+
+```{r}
+budget <- data.frame(
+  ReleaseDate = c("Apr 23, 2019", "Aug 26, 2020"),
+  MovieName = c("Avengers: Endgame", "Tenet"),
+  Budget = c("$400,000,000", "$205,000,000")
+)
+budget
+```
+
+d.	Assume that the data type of the release date is a string. Convert the release date to date type. (Hint: you can use the value from the previous answer)
+```{r}
+Sys.setlocale("LC_TIME", "English")
+budget$ReleaseDate <- as.Date(budget$ReleaseDate,format = "%b %d, %Y")
+budget
+```
+
+e.	Find all movies that were released in April 2022
+(Hint: you can use the value from the previous answer)
+```{r}
+#budget[budget$ReleaseDate > "2022-04-01" & budget$ReleaseDate < "2022-05-01",]
+budget[budget$ReleaseDate > "2019-04-01" & budget$ReleaseDate < "2019-05-01",]
+```
+
+Question B2
+Write R code to
+a.	import the dataset to the working environment and store it to the object student. Suppose the user will select the dataset file through the file directory.
+```{r}
+path <- file.choose()
+student <- read.csv(path)
+student
+```
+
+b.	extract each student's registration year from the studentID using the stringr package and add the data to the dataframe as a new column named registrationyear. Suppose the first two digits of studentID are the registration year.
+```{r}
+student$registrationyear <- substr(student$StudentID,1,2)
+student
+```
+
+c.	amend the inappropriate ProgrammeCode with respect to the below reference table, named ref, using merge().
+```{r}
+ref <- data.frame(Wrong = c("DSANo.1","D SA","ES","Software","GDS","GG"),
+                  Correst = c("DSA","DSA","SE","SE","GSD","GSD"))
+
+ref
+studentMerge <- merge(student,ref,by.x = "ProgrammeCode",by.y = "Wrong",all.x = T)
+studentMerge
+studentMerge$ProgrammeCode <- ifelse(is.na(studentMerge$Correst),studentMerge$ProgrammeCode,studentMerge$Correst)
+studentMerge[,-ncol(studentMerge)]
+```
+
+Question B3
+```{r}
+Record <- data.frame(data = seq.Date(from = as.Date("2021-07-01"),to = as.Date("2021-07-10"),by = "day"),
+                     temperature = c(32,33,28,30,33,33,31,33,29,29),
+                     humidity = c(31,43,35,37,47,37,32,47,30,43),
+                     WindSpeed = c(18,16,15,17,19,18,17,15,20,18))
+Record
+```
+
+a.	calculate the water vapour pressure value and add it to the dataframe as a new column named WVP. This is the equation of water vapour pressure:
+```{r}
+Record$WVP <- Record$humidity / 100 * 6.105 * exp(17.27 * Record$temperature / (237.7 + Record$temperature))
+Record
+```
+
+b.	calculate the apparent temperature value and add it to the dataframe as a new column named AT. This is the equation of apparent temperature.
+```{r}
+Record$AT <- 1.04 * Record$temperature + 0.2 * Record$WVP + 0.65 * Record$WindSpeed - 2.7
+Record
+```
+
+c. calculate the average apparent temperature by weekday.
+```{r}
+weekday <- weekdays(Record$data)
+Avgtemp <- tapply(Record$AT,weekday,mean)
+Avgtemp
+```
+
+d. delete the columns humidity and WVP.
+```{r}
+Record$humidity <- NULL
+Record$WVP <- NULL
+Record
+```
+
